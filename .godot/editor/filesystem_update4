@@ -1,0 +1,6 @@
+res://scenes/user_form.tscn
+res://scripts/gesture_detector.gd
+res://data/users.json
+res://scripts/main.gd
+res://scripts/on_screen_keyboard.gd
+res://scripts/user_form.gd

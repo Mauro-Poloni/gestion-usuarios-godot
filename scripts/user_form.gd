@@ -3,6 +3,7 @@ extends Control
 var UserManagerScript = preload("res://scripts/UserManager.gd")
 var user_manager
 var edit_mode = false
+var active_input: LineEdit = null
 var edit_id = -1
 
 # Usar onready para evitar errores
@@ -13,6 +14,8 @@ var edit_id = -1
 @onready var error_label = get_node_or_null("VBoxContainer/ErrorLabel")
 @onready var save_btn = get_node_or_null("VBoxContainer/HBoxContainer/SaveButton")
 @onready var cancel_btn = get_node_or_null("VBoxContainer/HBoxContainer/CancelButton")
+@onready var keyboard_panel = get_node_or_null("VBoxContainer/KeyboardPanel")
+
 
 func _ready():
 	user_manager = UserManagerScript.new()
@@ -28,6 +31,17 @@ func _ready():
 	
 	save_btn.pressed.connect(_on_save)
 	cancel_btn.pressed.connect(_on_cancel)
+	
+	if keyboard_panel:
+		var keyboard_script = preload("res://scripts/on_screen_keyboard.gd")
+		var keyboard = keyboard_script.new()
+		keyboard_panel.add_child(keyboard)
+		keyboard.key_pressed.connect(_on_keyboard_key)
+		
+		# Conectar focus para saber qué LineEdit está activo
+		for field in [name_input, lastname_input, dni_input]:
+			if field:
+				field.focus_entered.connect(_on_input_focus.bind(field))
 	
 	if error_label:
 		error_label.visible = false
@@ -92,3 +106,20 @@ func show_error(msg: String):
 	if error_label:
 		error_label.text = msg
 		error_label.visible = true
+		
+func _on_input_focus(field: LineEdit):
+	active_input = field
+
+
+func _on_keyboard_key(char: String):
+	if not active_input:
+		return
+	
+	match char:
+		"BACKSPACE":
+			if active_input.text.length() > 0:
+				active_input.text = active_input.text.substr(0, active_input.text.length() - 1)
+		"CLEAR":
+			active_input.text = ""
+		_:
+			active_input.text += char
